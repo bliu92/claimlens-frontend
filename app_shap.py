@@ -37,7 +37,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.subheader("Model Selection")
-    st.info("Current Model: **TF-IDF (1-2 gram) + Logistic Regression**")
+    st.info("Current Model: **TF-IDF + Logistic Regression**")
 
     # 静态提示：告知用户阈值由模型自适应提供
     st.markdown("##### Decision Strategy")
