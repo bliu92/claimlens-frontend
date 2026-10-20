@@ -4,7 +4,8 @@ import requests
 """
 # Claimlens
 """
-url = st.secrets['https://backboard-pulverize-perennial.ngrok-free.dev/predict']
+#url = st.secrets['https://backboard-pulverize-perennial.ngrok-free.dev/predict']
+url = "https://backboard-pulverize-perennial.ngrok-free.dev/predict"
 
 #st.title("Predict the refund intent of a customer")
 
