@@ -17,7 +17,6 @@ def render_highlighted_text(raw_text: str, keywords: list[str]) -> str:
     if not keywords or not raw_text.strip():
         return raw_text
 
-    # 优先匹配较长的短语，避免子词干扰
     sorted_kws = sorted(keywords, key=len, reverse=True)
     pattern = re.compile(r'\b(' + '|'.join(map(re.escape, sorted_kws)) + r')\b', re.IGNORECASE)
     highlight_tag = (
@@ -40,15 +39,9 @@ with st.sidebar:
     st.subheader("Model Selection")
     st.info("Current Model: **TF-IDF (1-2 gram) + Logistic Regression**")
 
-    # 动态阈值滑块
-    threshold = st.slider(
-        "Intent Decision Threshold",
-        min_value=0.1,
-        max_value=0.9,
-        value=0.44,
-        step=0.01,
-        help="Probability threshold to classify a message as a refund intent"
-    )
+    # 静态提示：告知用户阈值由模型自适应提供
+    st.markdown("##### Decision Strategy")
+    st.caption("⚡ **Adaptive Threshold**: Determined automatically by model validation optimization.")
 
     st.markdown("---")
     st.caption("© 2026 ClaimLens Team. All rights reserved.")
@@ -80,9 +73,9 @@ if submit_standard or submit_shap:
     if not customer_message.strip():
         st.warning("Please enter a customer message first.")
     else:
+        # 不传 threshold 参数，完全由后端模型提供默认决策阈值
         params = {
-            "customer_message": customer_message,
-            "threshold": threshold
+            "customer_message": customer_message
         }
 
         try:
@@ -91,25 +84,40 @@ if submit_standard or submit_shap:
                 response.raise_for_status()
                 result = response.json()
 
-            # 兼容两种返回格式
+            # 解析后端 API 返回数据
             intent = result.get("Refund Intent", "Yes" if result.get("refund_intent") == 1 else "No")
-            prob = result.get("Refund Intent Probability", result.get("probability", 0.0))
+            prob = float(result.get("Refund Intent Probability", result.get("probability", 0.0)))
+            model_threshold = float(result.get("threshold", 0.44))  # 从模型返回中动态获取
             key_features = result.get("key_features", [])
 
             st.markdown("---")
             st.subheader("Results")
 
-            # 状态展示
-            col_metric1, col_metric2 = st.columns([1, 1])
-            with col_metric1:
-                if intent == "Yes":
-                    st.error(f"🚨 Predicted Refund Intent: **{intent}**")
-                else:
-                    st.success(f"💬 Predicted Refund Intent: **{intent}**")
+            # 状态卡片与指标展示
+            col_status, col_prob, col_thresh = st.columns([1.5, 1, 1])
 
-            with col_metric2:
-                st.metric(label="Refund Probability", value=f"{prob:.2%}")
-                st.progress(float(prob))
+            with col_status:
+                if intent == "Yes":
+                    st.error(f"🚨 Predicted Intent: **{intent} (Refund/Return)**")
+                else:
+                    st.success(f"💬 Predicted Intent: **{intent} (General Query)**")
+
+            with col_prob:
+                delta_val = prob - model_threshold
+                st.metric(
+                    label="Predicted Probability",
+                    value=f"{prob:.2%}",
+                    delta=f"{delta_val:+.2%} vs threshold"
+                )
+
+            with col_thresh:
+                st.metric(
+                    label="Model Optimal Threshold",
+                    value=f"{model_threshold:.2f}",
+                    help="Loaded dynamically from the trained model metadata."
+                )
+
+            st.progress(prob)
 
             # 仅在点击 "Predict with SHAP" 时渲染关键词及高亮
             if submit_shap:
