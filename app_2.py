@@ -153,8 +153,8 @@ if st.session_state.stage1_result and st.session_state.stage1_result["intent"] =
                         prob = float(result.get("Refund Intent Probability", result.get("probability", 0.0)))
 
                         st.session_state.stage2_result = {
-                                            "intent": intent,
-                                            "probability": prob
+                                            "Money back": intent,
+                                            "Probality of lossing money": prob
                                         }
 
                 except requests.exceptions.RequestException as e:
