@@ -10,7 +10,7 @@ st.set_page_config(
 
 # 两个模型的 API 地址
 URL_STAGE1 = "https://backboard-pulverize-perennial.ngrok-free.dev/predict"
-URL_STAGE2 = "https://backboard-pulverize-perennial.ngrok-free.dev/predict_stage2"
+URL_STAGE2 = "https://backboard-pulverize-perennial.ngrok-free.dev/predict"
 
 # ----------------------------------------------------
 # 1. 初始化 Session State (保留多轮交互数据)
@@ -81,10 +81,13 @@ with st.form("Stage 1 - Initial Message"):
                 response.raise_for_status()
                 result = response.json()
 
-                prediction = result.get("refund_intent", result)
-                prediction_prob = result.get("probability", result)
-                intent = prediction.get("Refund Intent", result.get("Refund Intent", "No"))
-                prob = prediction_prob.get("Refund Intent Probability", result.get("Refund Intent Probability", 0.0))
+                intent = result.get("Refund Intent", "Yes" if result.get("refund_intent") == 1 else "No")
+                prob = float(result.get("Refund Intent Probability", result.get("probability", 0.0)))
+
+                #prediction = result.get("refund_intent", result)
+                #prediction_prob = result.get("probability", result)
+                #intent = prediction.get("Refund Intent", result.get("Refund Intent", "No"))
+               # prob = prediction_prob.get("Refund Intent Probability", result.get("Refund Intent Probability", 0.0))
 
                 st.session_state.stage1_result = {
                     "intent": intent,
