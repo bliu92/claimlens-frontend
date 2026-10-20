@@ -152,7 +152,7 @@ if st.session_state.stage1_result and st.session_state.stage1_result["intent"] =
                         intent = result.get("Refund Intent", "Yes" if result.get("refund_intent") == 1 else "No")
                         prob = float(result.get("Refund Intent Probability", result.get("probability", 0.0)))
 
-                        st.session_state.stage1_result = {
+                        st.session_state.stage2_result = {
                                             "intent": intent,
                                             "probability": prob
                                         }
