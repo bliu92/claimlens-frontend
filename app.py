@@ -4,7 +4,7 @@ import requests
 """
 # Claimlens
 """
-url = st.secrets['API_URL']
+url = st.secrets['https://backboard-pulverize-perennial.ngrok-free.dev/predict']
 
 #st.title("Predict the refund intent of a customer")
 
