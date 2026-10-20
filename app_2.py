@@ -141,9 +141,21 @@ if st.session_state.stage1_result and st.session_state.stage1_result["intent"] =
 
                 try:
                     with st.spinner("Processing second model inference..."):
-                        response_s2 = requests.post(URL_STAGE2, json=payload, timeout=15)
-                        response_s2.raise_for_status()
-                        st.session_state.stage2_result = response_s2.json()
+                        #response_s2 = requests.post(URL_STAGE2, json=payload, timeout=15)
+                        #response_s2.raise_for_status()
+                        #st.session_state.stage2_result = response_s2.json()
+                        params = payload['combined_message']
+                        response = requests.get(URL_STAGE1, params=params, timeout=10)
+                        response.raise_for_status()
+                        result = response.json()
+
+                        intent = result.get("Refund Intent", "Yes" if result.get("refund_intent") == 1 else "No")
+                        prob = float(result.get("Refund Intent Probability", result.get("probability", 0.0)))
+
+                        st.session_state.stage1_result = {
+                                            "intent": intent,
+                                            "probability": prob
+                                        }
 
                 except requests.exceptions.RequestException as e:
                     st.error(f"Stage 2 API Request Failed: {e}")
